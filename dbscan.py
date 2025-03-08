@@ -1,6 +1,7 @@
 import math
 import matplotlib.pyplot as plt
 
+#Classe do ponto
 class Ponto:
     def __init__(self, pos_x, pos_y,):
         self.pos_x = pos_x
@@ -31,12 +32,14 @@ def lerArquivo(arquivo_src):
             leitura_dados = True
     return pontos
 
+#Plota o gráfico base com os dados iniciais do projeto (Sem tratamento)
 def plotarGraficoBase(pontos):
     for ponto in pontos:
         plt.scatter(ponto.pos_x, ponto.pos_y, c = 'b')
     plt.show()
 
 
+#Plota os gráficos apos a rotulacao dos pontos (CENTRO/RUIDO/BORDA)
 def plotarGraficoMeio(pontos):
     for ponto in pontos:
         if ponto.rotulo == "centro":
@@ -47,8 +50,8 @@ def plotarGraficoMeio(pontos):
             plt.scatter(ponto.pos_x, ponto.pos_y, c = 'k', marker='x')
     plt.show()
 
+#Funcao auxziliar para gerar cores diferentes para k grupos
 def gerar_cores(num_clusters):
-    """Gera cores RGB escalonadas com base no número de clusters."""
     cores = []
     passo = 255 // max(1, num_clusters)  # Evita divisão por zero
     for i in range(num_clusters):
@@ -58,19 +61,17 @@ def gerar_cores(num_clusters):
         cores.append((r / 255, g / 255, b / 255))  # Normaliza para Matplotlib (0-1)
     return cores
 
+#Plota o gráfico final diferenciando os grupos
 def plotarGraficoFinal(pontos, clusters):
     num_clusters = len(clusters)
     cores = gerar_cores(num_clusters)
-
     for indice in range(len(clusters)):
         for ponto in clusters[indice]:
             if ponto.rotulo == "centro" or ponto.rotulo == "borda":
                 plt.scatter(ponto.pos_x, ponto.pos_y, color = cores[indice])
-
     for ponto in pontos:
         if ponto.rotulo == "ruido":
             plt.scatter(ponto.pos_x, ponto.pos_y, c = 'k' , marker = 'x')
-
     plt.show()
 
 #Calculo da distancia entre dois pontos (Distancia Euclidiana)
@@ -78,7 +79,7 @@ def calculo_distancia(ponto, ponto_vizinho):
     ditancia = math.sqrt(pow(ponto.pos_x - ponto_vizinho.pos_x, 2) + pow(ponto.pos_y - ponto_vizinho.pos_y, 2))
     return ditancia
 
-
+#Procura os vizinhos de um determinado ponto baseado no epsolon
 def procurar_vizinhos(ponto, pontos, eps):
     vizinhos = []
     for ponto_viznho in pontos:
@@ -88,8 +89,7 @@ def procurar_vizinhos(ponto, pontos, eps):
                 vizinhos.append(ponto_viznho)
     return vizinhos
 
-
-
+#Faz a expansao do cluster expandido os vizinhos que forem centro
 def expandir_cluster(pontos, vizinhos, eps, minpts):
     cluster = []
     indice = 0
@@ -106,6 +106,7 @@ def expandir_cluster(pontos, vizinhos, eps, minpts):
         indice += 1
     return cluster
 
+#Laco inicial, percorre tentando encontrar os centros nao visitados
 def dbscan(pontos, eps, minpts):
     clusters = []
     for ponto in pontos:
@@ -119,12 +120,12 @@ def dbscan(pontos, eps, minpts):
                 clusters.append(cluster)
     return clusters
 
-
+#Definicao das variaveis epslon (Raio), minpts (Pontos minimos para ser centro) e o caminho para o arquivo
 def main():
     arquivo_src = "./datasets/compound.arff"
+    eps = 1.5  # Raio da vizinhança
+    minpts = 5  # Minimo de pontos necessarios para ser um ponto de centro
     pontos = lerArquivo(arquivo_src)
-    eps = 1.5 #Raio da vizinhança
-    minpts = 5 #Minimo de pontos necessarios para ser um ponto de centro
     plotarGraficoBase(pontos)
     clusters = dbscan(pontos, eps, minpts)
     plotarGraficoMeio(pontos)
